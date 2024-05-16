@@ -1,6 +1,8 @@
 package null
 
 import (
+	"bytes"
+	"encoding/json"
 	"reflect"
 )
 
@@ -18,6 +20,26 @@ func New[T any](val T) Null[T] {
 
 func (n Null[T]) IsNull() bool {
 	return !n.Valid
+}
+
+func (n Null[T]) MarshalJSON() ([]byte, error) {
+	if !n.Valid {
+		return []byte("null"), nil
+	}
+	return json.Marshal(n.Data)
+}
+
+func (n *Null[T]) UnmarshalJSON(b []byte) error {
+	if bytes.Equal(b, []byte("null")) {
+		*n = Null[T]{}
+		return nil
+	}
+	err := json.Unmarshal(b, &n.Data)
+	if err != nil {
+		return err
+	}
+	n.Valid = true
+	return nil
 }
 
 // IsNullType should NOT be used directly

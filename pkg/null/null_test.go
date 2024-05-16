@@ -1,6 +1,7 @@
 package null
 
 import (
+	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
@@ -70,5 +71,51 @@ func TestIsNullType(t *testing.T) {
 		val := reflect.ValueOf(invalidStruct{})
 		_, _, ok := IsNullType(val)
 		assert.Equal(t, false, ok)
+	})
+}
+
+func TestMarshalJSON(t *testing.T) {
+	t.Run("null", func(t *testing.T) {
+		v := Null[string]{}
+
+		data, err := json.Marshal(v)
+		assert.Equal(t, nil, err)
+		assert.Equal(t, "null", string(data))
+
+		var newVal Null[string]
+		err = json.Unmarshal(data, &newVal)
+		assert.Equal(t, nil, err)
+		assert.Equal(t, v, newVal)
+	})
+
+	t.Run("non null", func(t *testing.T) {
+		v := New("hello world")
+
+		data, err := json.Marshal(v)
+		assert.Equal(t, nil, err)
+		assert.Equal(t, `"hello world"`, string(data))
+
+		var newVal Null[string]
+		err = json.Unmarshal(data, &newVal)
+		assert.Equal(t, nil, err)
+		assert.Equal(t, v, newVal)
+	})
+
+	t.Run("unmarshal null", func(t *testing.T) {
+		val := New("some string")
+
+		err := json.Unmarshal([]byte("null"), &val)
+
+		assert.Equal(t, nil, err)
+		assert.Equal(t, Null[string]{}, val)
+	})
+
+	t.Run("unmarshal error", func(t *testing.T) {
+		var val Null[int]
+
+		err := json.Unmarshal([]byte(`"AB"`), &val)
+
+		assert.Equal(t, "json: cannot unmarshal string into Go value of type int", err.Error())
+		assert.Equal(t, Null[int]{}, val)
 	})
 }

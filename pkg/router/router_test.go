@@ -334,3 +334,31 @@ func TestHTMLPost_Parse_JSON_Request_Error(t *testing.T) {
 		"Content-Type": []string{"application/json; charset=utf-8"},
 	}, writer.Header())
 }
+
+func TestHTMLPost_Parse_Query_Param_Error(t *testing.T) {
+	r := NewRouter()
+
+	HTMLPost(r, userPath, func(ctx *Context, req userPostRequest) (template.HTML, error) {
+		return "<div>Hello</div>", nil
+	})
+
+	body := `
+{
+  "user_id": 33,
+  "body": "Some Body"
+}
+`
+
+	req := httptest.NewRequest(http.MethodPost, "/api/users/123?age=AA", bytes.NewBufferString(body))
+	writer := httptest.NewRecorder()
+	r.Mux().ServeHTTP(writer, req)
+
+	assert.Equal(t, http.StatusBadRequest, writer.Code)
+	assert.Equal(t,
+		`{"error":"router: can not parse value 'AA' into field 'Age'"}`+"\n",
+		writer.Body.String(),
+	)
+	assert.Equal(t, http.Header{
+		"Content-Type": []string{"application/json; charset=utf-8"},
+	}, writer.Header())
+}
