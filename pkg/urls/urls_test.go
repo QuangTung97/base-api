@@ -2,6 +2,7 @@ package urls
 
 import (
 	"github.com/stretchr/testify/assert"
+	"learn-gin/pkg/null"
 	"testing"
 )
 
@@ -51,6 +52,8 @@ func TestNew(t *testing.T) {
 	t.Run("normal", func(t *testing.T) {
 		p := New[userPath]("/api/users/{user_id}/list")
 		assert.Equal(t, []string{"user_id"}, p.pathParams)
+		assert.Equal(t, []string{"user_id"}, p.GetPathParams())
+		assert.Equal(t, "/api/users/{user_id}/list", p.GetPattern())
 	})
 
 	t.Run("missing path param", func(t *testing.T) {
@@ -148,5 +151,86 @@ func TestCheckIsSubStruct(t *testing.T) {
 		assert.PanicsWithValue(t, "must be a struct type", func() {
 			CheckIsSubStruct("", structA{})
 		})
+	})
+}
+
+func TestPath_GetAllParams(t *testing.T) {
+	t.Run("normal", func(t *testing.T) {
+		type request struct {
+			Name string           `json:"name"`
+			Age  null.Null[int32] `json:"age"`
+		}
+
+		p := New[request]("/api/users/{name}/list")
+		assert.Equal(t, []string{"name", "age"}, p.GetAllParams())
+	})
+}
+
+func TestPath_Eval(t *testing.T) {
+	t.Run("normal", func(t *testing.T) {
+		type request struct {
+			Name string           `json:"name"`
+			Age  null.Null[int32] `json:"age"`
+		}
+
+		p := New[request]("/api/users/{name}/list")
+
+		assert.Equal(t, "/api/users/user01/list", p.Eval(request{
+			Name: "user01",
+		}))
+	})
+
+	t.Run("with regex", func(t *testing.T) {
+		type request struct {
+			Name string           `json:"name"`
+			Age  null.Null[int32] `json:"age"`
+		}
+
+		p := New[request]("/api/users/{name:[a-z]+}/list")
+
+		assert.Equal(t, "/api/users/user01/list", p.Eval(request{
+			Name: "user01",
+		}))
+	})
+
+	t.Run("with query params", func(t *testing.T) {
+		type request struct {
+			Name string           `json:"name"`
+			Age  null.Null[int32] `json:"age"`
+		}
+
+		p := New[request]("/api/users/{name:[a-z]+}/list")
+
+		assert.Equal(t, "/api/users/user01/list?age=123", p.Eval(request{
+			Name: "user01",
+			Age:  null.New[int32](123),
+		}))
+	})
+
+	t.Run("with zero value", func(t *testing.T) {
+		type request struct {
+			Name string `json:"name"`
+			Age  int32  `json:"age"`
+		}
+
+		p := New[request]("/api/users/{name:[a-z]+}/list")
+
+		assert.Equal(t, "/api/users/user01/list", p.Eval(request{
+			Name: "user01",
+		}))
+	})
+
+	t.Run("with escape", func(t *testing.T) {
+		type request struct {
+			Name   string `json:"name"`
+			Search string `json:"search"`
+		}
+
+		p := New[request]("/api/users/{name:[a-z]+}/list")
+
+		assert.Equal(t, "/api/users/user01/list?search=hello%3F%21", p.Eval(request{
+			Name:   "user01",
+			Search: "hello?!",
+		}))
 	})
 }
