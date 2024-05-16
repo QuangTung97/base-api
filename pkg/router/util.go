@@ -19,13 +19,13 @@ func inList(list []string, str string) bool {
 	return false
 }
 
-func doAssignParams[T any](ctx *Context, req any, pattern urls.Path[T]) error {
+func doAssignParams[T any](ctx Context, req any, pattern urls.Path[T]) error {
 	pathParams := pattern.GetPathParams()
 	return assignParams(req, pattern.GetAllParams(), func(key string) string {
 		if inList(pathParams, key) {
-			return chi.URLParam(ctx.Request, key)
+			return chi.URLParam(ctx.request, key)
 		}
-		return ctx.Request.URL.Query().Get(key)
+		return ctx.request.URL.Query().Get(key)
 	})
 }
 

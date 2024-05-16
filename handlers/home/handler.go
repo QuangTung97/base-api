@@ -15,14 +15,14 @@ func NewHandler() *Handler {
 
 type IndexRequest struct{}
 
-func (h *Handler) Index(ctx *router.Context, req IndexRequest) (template.HTML, error) {
+func (h *Handler) Index(ctx router.Context, req IndexRequest) (template.HTML, error) {
 	return views.Index(views.IndexData{})
 }
 
 type GetDatasetRequest struct {
-	DatasetID string `json:"datasetId"`
+	DatasetID int64 `json:"dataset_id"`
 }
 
-func (h *Handler) GetDataset(ctx *router.Context, req GetDatasetRequest) (template.HTML, error) {
+func (h *Handler) GetDataset(ctx router.Context, req GetDatasetRequest) (template.HTML, error) {
 	return views.Index(views.IndexData{})
 }

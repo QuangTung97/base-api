@@ -31,7 +31,7 @@ func TestHTMLGet_Success(t *testing.T) {
 	r := NewRouter()
 
 	var inputReq userGetRequest
-	HTMLGet(r, userPath, func(ctx *Context, req userGetRequest) (template.HTML, error) {
+	HTMLGet(r, userPath, func(ctx Context, req userGetRequest) (template.HTML, error) {
 		inputReq = req
 		return "<div>Hello</div>", nil
 	})
@@ -59,7 +59,7 @@ func TestHTMLGet_Not_A_Sub_Struct(t *testing.T) {
 	}
 
 	assert.PanicsWithValue(t, "missing field 'UserID' in struct 'invalidRequest'", func() {
-		HTMLGet(r, userPath, func(ctx *Context, req invalidRequest) (template.HTML, error) {
+		HTMLGet(r, userPath, func(ctx Context, req invalidRequest) (template.HTML, error) {
 			return "", nil
 		})
 	})
@@ -69,7 +69,7 @@ func TestHTMLGet_With_Error(t *testing.T) {
 	r := NewRouter()
 
 	var inputReq userGetRequest
-	HTMLGet(r, userPath, func(ctx *Context, req userGetRequest) (template.HTML, error) {
+	HTMLGet(r, userPath, func(ctx Context, req userGetRequest) (template.HTML, error) {
 		inputReq = req
 		return "", errors.New("some handler error")
 	})
@@ -97,7 +97,7 @@ func TestHTMLGet_With_Error(t *testing.T) {
 func TestHTMLGet_With_Invalid_Query_Param(t *testing.T) {
 	r := NewRouter()
 
-	HTMLGet(r, userPath, func(ctx *Context, req userGetRequest) (template.HTML, error) {
+	HTMLGet(r, userPath, func(ctx Context, req userGetRequest) (template.HTML, error) {
 		return "<div>Hello</div>", nil
 	})
 
@@ -136,7 +136,7 @@ func TestHTMLPost_Success(t *testing.T) {
 	r := NewRouter()
 
 	var inputReq userPostRequest
-	HTMLPost(r, userPath, func(ctx *Context, req userPostRequest) (template.HTML, error) {
+	HTMLPost(r, userPath, func(ctx Context, req userPostRequest) (template.HTML, error) {
 		inputReq = req
 		return "<div>Hello</div>", nil
 	})
@@ -177,7 +177,7 @@ func TestHTMLPost_Success(t *testing.T) {
 func TestHTMLPost_Parse_JSON_Request_Error(t *testing.T) {
 	r := NewRouter()
 
-	HTMLPost(r, userPath, func(ctx *Context, req userPostRequest) (template.HTML, error) {
+	HTMLPost(r, userPath, func(ctx Context, req userPostRequest) (template.HTML, error) {
 		return "<div>Hello</div>", nil
 	})
 
@@ -210,7 +210,7 @@ func TestHTMLPost_Parse_JSON_Request_Error(t *testing.T) {
 func TestHTMLPost_Parse_Query_Param_Error(t *testing.T) {
 	r := NewRouter()
 
-	HTMLPost(r, userPath, func(ctx *Context, req userPostRequest) (template.HTML, error) {
+	HTMLPost(r, userPath, func(ctx Context, req userPostRequest) (template.HTML, error) {
 		return "<div>Hello</div>", nil
 	})
 

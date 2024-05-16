@@ -17,6 +17,10 @@ type Path[T any] struct {
 
 type Empty struct{}
 
+func NewEmpty(pattern string) Path[Empty] {
+	return New[Empty](pattern)
+}
+
 func New[T any](pattern string) Path[T] {
 	params := findPathParams(pattern)
 	var obj T
