@@ -85,3 +85,68 @@ func TestNew(t *testing.T) {
 		assert.Equal(t, []string{"user_id", "name"}, p.pathParams)
 	})
 }
+
+type structA struct {
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+}
+
+type structB struct {
+	Value int `json:"value"`
+}
+
+type structC struct {
+	Name int `json:"name"`
+	Age  int `json:"age"`
+}
+
+type structD struct {
+	Name string `json:"name,omitempty"`
+	Age  int    `json:"age"`
+}
+
+type structE struct {
+	Name string  `json:"name"`
+	Age  int     `json:"age"`
+	Val  float64 `json:"val"`
+}
+
+func TestCheckIsSubStruct(t *testing.T) {
+	t.Run("missing field", func(t *testing.T) {
+		assert.PanicsWithValue(t, "missing field 'Name' in struct 'structB'", func() {
+			CheckIsSubStruct(structB{}, structA{})
+		})
+	})
+
+	t.Run("invalid type", func(t *testing.T) {
+		assert.PanicsWithValue(t, "mismatch type of field 'Name' in struct 'structC'", func() {
+			CheckIsSubStruct(structC{}, structA{})
+		})
+	})
+
+	t.Run("invalid tag", func(t *testing.T) {
+		assert.PanicsWithValue(t, "mismatch struct tag of field 'Name' in struct 'structD'", func() {
+			CheckIsSubStruct(structD{}, structA{})
+		})
+	})
+
+	t.Run("same", func(t *testing.T) {
+		CheckIsSubStruct(structA{}, structA{})
+	})
+
+	t.Run("sub", func(t *testing.T) {
+		CheckIsSubStruct(structE{}, structA{})
+	})
+
+	t.Run("parent not a struct", func(t *testing.T) {
+		assert.PanicsWithValue(t, "must be a struct type", func() {
+			CheckIsSubStruct(structA{}, "")
+		})
+	})
+
+	t.Run("sub not a struct", func(t *testing.T) {
+		assert.PanicsWithValue(t, "must be a struct type", func() {
+			CheckIsSubStruct("", structA{})
+		})
+	})
+}
